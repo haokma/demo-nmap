@@ -1,6 +1,7 @@
 -- HEAD SECTON
 
 local http = require "http"
+local api_version="1.7"
 
 -- RULE SECTION
 portrule = function(host,port)
@@ -14,26 +15,28 @@ end
 -- postrule
 
 -- action section
-action = function(host, port)
-    	
-	-- The Vuln Definition Section --
-	local vuln = {
-    		title = " Apache HTTP Server 2.4.50 Vulneribility" ,
-    		IDS = { CVE = 'CVE-2021-42013' }
-}
 
+--function req_api(port)
+	
+--end
+
+action = function(host, port , ver_id)
+	local option={
+    		header={
+      			['User-Agent'] = string.format('Vulners NMAP Plugin %s', api_version),
+		        ['Accept-Encoding'] = "gzip, deflate"
+    		},
+	        any_af = true,
+  	}
+  	
+  	-- get apache version
 	local uri = "/index.html"
-	local reponse = http.head(host,port,uri)
-	if ( reponse.status == 200 ) then 
-		if ( reponse.header.server:match "Apache/2.4.50") then
-			return vuln
-		else
-			return " Maybe Safety ! "	
-		end
+	local response = http.head(host,port,uri)
+	local apache_ver = response.header.server
 	
-	else
-		return " Something Wrong ! "
-	end
-	
+
+	local api_host = "https://www.cvedetails.com/json-feed.php"
+	local result  = http.get_url(("%s?version_id=%s"):format(api_host,ver_id),option)
+	return result.body
 end	
 
