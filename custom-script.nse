@@ -37,6 +37,6 @@ action = function(host, port , ver_id)
 
 	local api_host = "https://www.cvedetails.com/json-feed.php"
 	local result  = http.get_url(("%s?version_id=%s"):format(api_host,ver_id),option)
-	return result.body
+	return ver_id
 end	
 
