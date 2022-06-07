@@ -20,7 +20,7 @@ end
 	
 --end
 
-action = function(host, port , ver_id)
+action = function(host, port )
 	local option={
     		header={
       			['User-Agent'] = string.format('Vulners NMAP Plugin %s', api_version),
@@ -29,6 +29,7 @@ action = function(host, port , ver_id)
 	        any_af = true,
   	}
   	
+	
   	-- get apache version
 	local uri = "/index.html"
 	local response = http.head(host,port,uri)
@@ -36,7 +37,7 @@ action = function(host, port , ver_id)
 	
 
 	local api_host = "https://www.cvedetails.com/json-feed.php"
-	local result  = http.get_url(("%s?version_id=%s"):format(api_host,ver_id),option)
-	return result.body
+	local result  = http.get_url(("%s?version_id=%s"):format(api_host,nmap.registry.args.vulscandb),option)
+	return ver_id
 end	
 
