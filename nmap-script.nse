@@ -3,6 +3,7 @@
 local http = require "http"
 local api_version="1.7"
 
+
 -- RULE SECTION
 portrule = function(host,port)
 	return port.protocol == 'tcp' or 'udp' and port.number == 80 or 443
@@ -30,14 +31,12 @@ action = function(host, port )
   	}
   	
 	
-  	-- get apache version
-	local uri = "/index.html"
-	local response = http.head(host,port,uri)
-	local apache_ver = response.header.server
 	
 
 	local api_host = "https://www.cvedetails.com/json-feed.php"
-	local result  = http.get_url(("%s?version_id=%s"):format(api_host,nmap.registry.args.vulscandb),option)
-	return ver_id
+	--local result  = http.get_url(("%s?version_id=%s"):format(api_host,nmap.registry.args.ver_id),option)
+	uri = ("/json-feed.php?version_id=%s"):format(nmap.registry.args.ver_id)
+	local result = http.get("https://www.cvedetails.com",port,uri)
+	return result
 end	
 

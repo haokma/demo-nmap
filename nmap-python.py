@@ -4,10 +4,9 @@ import re
 
 def get_version_apa(host,port):
 	# send head request to host ip
-		req = requests.head("http://{}:{}".format(host,port))
+		req = requests.head("http://{}".format(host))
 		#filter result to get version of apache server 
 		filter_req = re.search(r"/.* ",req.headers['Server']).group()
-
 		return filter_req[1:-1:]
 	
 def regex_version_id(ver_apa):
@@ -15,6 +14,7 @@ def regex_version_id(ver_apa):
 	 
 	for n in range(1,12):
 	#send request from page 1 to page 2 to get reponse
+		
 		req_get_response = requests.get("https://www.cvedetails.com/version-list/45/66/{}/Apache-Http-Server.html?order=1".format(n))
 		# list_dot will help in regex process to filter version_id 
 		# because one apache version can have multiple version_id like 32222, 2333, 232442
@@ -31,24 +31,22 @@ def regex_version_id(ver_apa):
 					filtered = re.search(r"\bversion_id.*/",i).group()				
 					return filtered[12::]
 
-			# result = none -> ignore
-			else:
-				return len(get_ver_id)
+		print(" NOT FOUND CVE FOR THIS VERSION " )	
 
 def nmap_scan_port():
 	host = str(input("input host : "))
 
 	print("input a range of port to scan")
-	begin_port = str(input("Begining port : "))
+	begin_port = int(input("Begining port : "))
 
-	end_port = str(input("Ending port: "))
+	end_port = int(input("Ending port: "))
 	min_port = 1
 	max_port = 65535
 	if (begin_port >= min_port and end_port <= max_port):
-
-		sc = nmap.PortScanner()
-		result = sc.scan(host,'{}-{}'.format(begin_port,end_port))	
-		print(result)
+		for i in range(begin_port, end_port + 1 ):
+			sc = nmap.PortScanner()
+			result = sc.scan(host,'{}'.format(i))	
+			print(result)
 	else:
 		print("Invalid Port")
 
@@ -59,12 +57,11 @@ def nmap_scan_vul():
 
 	ver_apa = get_version_apa(host,port)
 	ver_id = regex_version_id(ver_apa)
-
 	sc = nmap.PortScanner()
 	if ver_id != None:
 	# use nmap-python to scan vulnerability with nmap script and pass the version_id to nmap script
-		result = sc.scan(host,port,arguments=" --script /home/nam/docker/custom-script.nse --script-args ver_id={} ".format(ver_id))
-		return result
+		result = sc.scan(host,port,arguments=" --script /home/nam/python_nma_nse/nmap-script.nse -d --script-args ver_id={} ".format(ver_id))
+		print(result)
 	else:
 		return "Not found CVE for apache version {}".format(ver_apa)
 
