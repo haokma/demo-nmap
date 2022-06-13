@@ -1,6 +1,7 @@
 import nmap
 import requests
 import re
+import json
 
 def get_version_apa(host,port):
 	# send head request to host ip
@@ -16,22 +17,15 @@ def regex_version_id(ver_apa):
 	#send request from page 1 to page 2 to get reponse
 		
 		req_get_response = requests.get("https://www.cvedetails.com/version-list/45/66/{}/Apache-Http-Server.html?order=1".format(n))
-		# list_dot will help in regex process to filter version_id 
-		# because one apache version can have multiple version_id like 32222, 2333, 232442
-		lst_dot = ["....",".....","......"]
-		for dot in lst_dot:
-			# regex the reponse to get output 
-			# output will look like:  [/vulnerability-list/vendor_id-45/product_id-66/version_id-323322/Apache-Http-Server-2.4.50.html]
-			get_ver_id = re.findall(r'href="/vulnerability-list/vendor_id-45/product_id-66/version_id-{}/Apache-Http-Server-{}.html"'.format(dot,str(ver_apa)),str(req_get_response.content))
-			
-			# result >= 1 
-			if len(get_ver_id) >= 1 :
-				for i in get_ver_id:
-					# filter the output and the version_id will look like 622345
-					filtered = re.search(r"\bversion_id.*/",i).group()				
-					return filtered[12::]
 
-		print(" NOT FOUND CVE FOR THIS VERSION " )	
+		# regex the reponse to get output 
+		# output will look like:  [/vulnerability-list/vendor_id-45/product_id-66/version_id-323322/Apache-Http-Server-2.4.50.html]
+		get_ver_id = re.findall(r'href="/vulnerability-list/vendor_id-45/product_id-66/version_id-....../Apache-Http-Server-{}.html"'.format(str(ver_apa)),str(req_get_response.content))
+		
+		return get_ver_id
+			
+		
+
 
 def nmap_scan_port():
 	host = str(input("input host : "))
@@ -56,14 +50,22 @@ def nmap_scan_vul():
 	port = str(input("input port "))
 
 	ver_apa = get_version_apa(host,port)
-	ver_id = regex_version_id(ver_apa)
-	sc = nmap.PortScanner()
-	if ver_id != None:
-	# use nmap-python to scan vulnerability with nmap script and pass the version_id to nmap script
-		result = sc.scan(host,port,arguments=" --script /home/nam/python_nma_nse/nmap-script.nse -d --script-args ver_id={} ".format(ver_id))
-		print(result)
+	lst_ver_id = regex_version_id(ver_apa)
+
+	if len(lst_ver_id) >= 1:
+		for i in lst_ver_id:
+			# filter the output and the version_id will look like 622345
+			
+			filtered = re.search(r"\bversion_id.*/",i).group()				
+			ver_id =  filtered[11::]
+				
+			sc = nmap.PortScanner()
+			# use nmap-python to scan vulnerability with nmap script and pass the version_id to nmap script
+			result = sc.scan(host,port,arguments=" --script /home/nam/nmap/nmap_script.nse -d --script-args ver_id={} ".format(ver_id))
+			result = json.dumps(result, indent = 4) 
+			print(result)
 	else:
-		return "Not found CVE for apache version {}".format(ver_apa)
+		 print("Not found CVE for apache version {}".format(ver_apa))
 
 
 
