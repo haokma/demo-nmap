@@ -29,7 +29,7 @@ def regex_version_id(ver_apa):
 def nmap_scan_port():
 
 	try:
-		host = str(input("input host : "))
+		host = input("input host : ")
 		begin_port = int(input("Begining port : "))
 		end_port = int(input("Ending port: "))
 		min_port = 1
