@@ -46,7 +46,7 @@ def nmap_scan_port():
 			print("Invalid Port")
 	except ValueError:
 		print("Invalid input")
-	main()
+	menu()
 
 def nmap_scan_vul():
 	host = input("input host : ")
@@ -72,7 +72,7 @@ def nmap_scan_vul():
 		 print("Not found CVE for apache version {}".format(ver_apa))
 	
 
-def main():
+def menu():
 	try:
 		print("-----------------------NMAP SCANNING TOOL---------------------------")
 		print("1. Scan open port  ")
@@ -88,7 +88,7 @@ def main():
 				exit()
 	except ValueError:
 		print("Invalid input")
-	main()
+	menu()
 	
 if __name__ == "__main__":
-	main()
+	menu()
